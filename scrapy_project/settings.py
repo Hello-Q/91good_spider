@@ -24,15 +24,15 @@ NEWSPIDER_MODULE = 'scrapy_project.spiders'
 ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-CONCURRENT_REQUESTS = 5
+CONCURRENT_REQUESTS = 8
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://doc.scrapy.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
-DOWNLOAD_DELAY = random.uniform(0.5, 0.91)
+DOWNLOAD_DELAY = random.uniform(0.3, 0.91)
 # The download delay setting will honor only one of:
-CONCURRENT_REQUESTS_PER_DOMAIN = 5
-CONCURRENT_REQUESTS_PER_IP = 5
+CONCURRENT_REQUESTS_PER_DOMAIN = 8
+CONCURRENT_REQUESTS_PER_IP = 8
 
 # Disable cookies (enabled by default)
 #COOKIES_ENABLED = False
@@ -71,8 +71,11 @@ DOWNLOADER_MIDDLEWARES = {
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
    # 'scrapy_project.pipelines.ScrapyProjectPipeline': 300,
-   'scrapy_project.pipelines.GoodSchoolPipeline': 300,
-   'scrapy_project.pipelines.GoodSchoolImgPipeline': 301,
+   'scrapy_project.pipelines.ImgPipeline': 300,  # 下载图片
+   'scrapy_project.pipelines.GoodSchoolPipeline': 301,  # 入库学校学校首页信息
+   'scrapy_project.pipelines.SchoolImgPipeline': 302,  # 入库学校照片链接
+   'scrapy_project.pipelines.BranchSchoolsPipeline': 304,  # 入库分校信息
+   'scrapy_project.pipelines.SchoolDescription': 305,  # 入库学校简介
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
