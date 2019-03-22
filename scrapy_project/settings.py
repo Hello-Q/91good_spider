@@ -29,7 +29,7 @@ CONCURRENT_REQUESTS = 8
 # Configure a delay for requests for the same website (default: 0)
 # See https://doc.scrapy.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
-DOWNLOAD_DELAY = random.uniform(0.3, 0.91)
+DOWNLOAD_DELAY = random.uniform(0.5, 1)
 # The download delay setting will honor only one of:
 CONCURRENT_REQUESTS_PER_DOMAIN = 8
 CONCURRENT_REQUESTS_PER_IP = 8
@@ -75,7 +75,8 @@ ITEM_PIPELINES = {
    'scrapy_project.pipelines.GoodSchoolPipeline': 301,  # 入库学校学校首页信息
    'scrapy_project.pipelines.SchoolImgPipeline': 302,  # 入库学校照片链接
    'scrapy_project.pipelines.BranchSchoolsPipeline': 304,  # 入库分校信息
-   'scrapy_project.pipelines.SchoolDescription': 305,  # 入库学校简介
+   'scrapy_project.pipelines.SchoolDescriptionPipeline': 305,  # 入库学校简介
+   'scrapy_project.pipelines.LessonInfoPipeline': 306,  # 落地课程信息 json
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
@@ -100,10 +101,10 @@ ITEM_PIPELINES = {
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
 # 启用log
-# to_day = datetime.datetime.now()
-# log_file_path = './log/scrapy {}_{}_{}.log'.format(to_day.year, to_day.month, to_day.day)
-# LOG_LEVEL = 'WARNING'
-# LOG_FILE = log_file_path
+to_day = datetime.datetime.now()
+log_file_path = './log/scrapy {}_{}_{}.log'.format(to_day.year, to_day.month, to_day.day)
+LOG_LEVEL = 'WARNING'
+LOG_FILE = log_file_path
 
 #
 #

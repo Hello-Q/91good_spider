@@ -40,7 +40,19 @@ class BranchSchoolsItem(scrapy.Item):
 
 
 class DescriptionItem(scrapy.Item):
-    # 学校介绍,包含下载图片
+    # 学校介绍
+    description = scrapy.Field()
+    img_urls = scrapy.Field()
+    # image_paths = scrapy.Field()
+    # img_type = scrapy.Field()
+    origin_url = scrapy.Field()
+
+
+class LessonInfoItem(scrapy.Item):
+    """课程信息"""
+    name = scrapy.Field()
+    price = scrapy.Field()
+    tag = scrapy.Field()
     description = scrapy.Field()
     img_urls = scrapy.Field()
     image_paths = scrapy.Field()

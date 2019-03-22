@@ -19,8 +19,8 @@ class Mysql:
     db = None
 
     def __init__(self):
-        # self.db = pymysql.connect('localhost', 'root', 'ZYQ1994zyq', 'pt')
-        self.db = pymysql.connect('47.110.148.144', 'root', 'rootMysqlzhengren79', 'test')
+        self.db = pymysql.connect('192.168.0.124', 'root', '123456', 'pt')
+        # self.db = pymysql.connect('47.110.148.144', 'root', 'rootMysqlzhengren79', 'test')
 
     def write_dict_data(self, data, sql):
         """
@@ -37,14 +37,14 @@ class Mysql:
         val_cols = ', '.join('%({})s'.format(k) for k in data.keys())
         # sql语句
         res_sql = sql % (cols, val_cols)
-        print(res_sql)
+        # print(res_sql)
         cursor.execute(res_sql, data)
         self.db.commit()
         self.db.close()
 
     def write_data(self, sql):
         # 常规插入数据
-        print(sql)
+        # print(sql)
         cursor = self.db.cursor(cursor=pymysql.cursors.DictCursor)
         cursor.execute(sql)
         self.db.commit()
@@ -53,7 +53,7 @@ class Mysql:
 
     def select_data(self, sql):
         """查询数据库数据"""
-        print(sql)
+        # print(sql)
         # 获取游标
         cursor = self.db.cursor(cursor=pymysql.cursors.DictCursor)
         cursor.execute(sql)
@@ -94,6 +94,7 @@ class SchoolImgPipeline(object):
     def process_item(self, item, spider):
         if isinstance(item, ImgItem):
             if item['img_type'] == 'logo':
+                print('下载logo图片')
                 origin_url = item['origin_url']
                 logo_path = dict(item)['image_paths']
                 logo_name = list(map(lambda path: path.replace('full/', ''), logo_path))
@@ -103,14 +104,15 @@ class SchoolImgPipeline(object):
                 sql = "update school set %s=%s where origin_url='{0}'".format(origin_url)
                 write_data.write_dict_data(logo_url, sql)
             if item['img_type'] == 'env':  # 环境
+                print('下载环境图片')
                 origin_url = item['origin_url']
                 env_paths = dict(item)['image_paths']
                 env_names = list(map(lambda path: path.replace('full/', ''), env_paths))
                 env_urls = list(map(lambda new_path: 'http://pt.njzredu.com/upload/20190320/' + new_path, env_names))
-                env_url_list = []
-                for env_url in env_urls:
-                    env_url_list.append(dict(zip(['img'], [env_url])))
-                img_url = dict(zip(['img_url'], [str(env_url_list)]))
+                # env_url_list = []
+                # for env_url in env_urls:
+                #     env_url_list.append(dict(zip(['img'], [env_url])))
+                img_url = dict(zip(['img_url'], [str(env_urls)]))
                 write_data = Mysql()
                 sql = "update school set %s=%s where origin_url='{0}'".format(origin_url)
                 write_data.write_dict_data(img_url, sql)
@@ -126,7 +128,6 @@ class BranchSchoolsPipeline(object):
             select_data = Mysql()
             sql = "select id from school where origin_url='{0}'".format(origin_url)
             parent_school_id = select_data.select_data(sql)[0]['id']
-            print(parent_school_id)
             data = {}
             for school_info in item['branch_school_info']:
                 name = school_info['name']
@@ -145,16 +146,58 @@ class BranchSchoolsPipeline(object):
         return item
 
 
-class SchoolDescription(object):
+class SchoolDescriptionPipeline(object):
+    """入库学校简介"""
     def process_item(self, item, spider):
         if isinstance(item, DescriptionItem):
             item = dict(item)
             origin_url = item['origin_url']
+            for img_url in item['img_urls']:
+                item['description'] = item['description'].replace(img_url, '')
             data = dict(zip(['description'], [item['description']]))
-            print(data)
             write_data = Mysql()
             mysql = "update school set %s=%s where origin_url='{0}'".format(origin_url)
             write_data.write_dict_data(data, mysql)
-            print('分校信息')
         return item
 
+
+class LessonInfoPipeline(object):
+    """保存课程信息"""
+    def process_item(self, item, spider):
+        if isinstance(item, LessonInfoItem):
+            item = dict(item)
+            for img_url in item['img_urls']:  # 删除水印图片
+                item['description'] = item['description'].replace(img_url, '')
+            with open('LessonInfoItem.json', 'a+') as f:
+                json.dump(item, f, ensure_ascii=False)
+                f.write(',')
+
+# class LessonInfoPipeline(ImgPipeline):
+#     """保存课程保存简介,并且下载图片替换链接"""
+#     def get_media_requests(self, item, info):
+#         if isinstance(item, LessonInfoItem):
+#             for image_url in item['img_urls']:
+#                 yield scrapy.Request(image_url)
+#
+#     def item_completed(self, results, item, info):
+#         print(123, results)
+#         if isinstance(item, LessonInfoItem):
+#             image_paths = [x['path'] for ok, x in results if ok]
+#             if not image_paths:
+#                 raise DropItem("Item contains no images")
+#             item['image_paths'] = image_paths
+#             item = dict(item)
+#             img_info = dict(zip(item['img_urls'], item['image_paths']))
+#             for img_url in img_info.keys():
+#                 # 去除文件夹,保留文件名
+#                 img_name = img_info[img_url].replace('full/', '')
+#                 # 拼接url前缀
+#                 new_url = 'http://pt.njzredu.com/upload/20190320/' + img_name
+#                 # 替换简介中的url
+#                 item['description'] = item['description'].replace(img_url.replace('https:', ''), new_url)
+#
+#             with open('LessonInfoItem.json', 'a+') as f:
+#                 json.dump(item, f, ensure_ascii=False)
+#                 f.write(',')
+#
+#         return item
