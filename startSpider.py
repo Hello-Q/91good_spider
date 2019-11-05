@@ -37,4 +37,4 @@ from scrapy import cmdline
 #     # 开始自动获取IP
 #     GetIpThread(apiUrl, fetchSecond).start()
 
-cmdline.execute("scrapy crawl 91good_school".split())
+cmdline.execute("scrapy crawl meituan".split())
